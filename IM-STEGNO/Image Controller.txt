@@ -1,0 +1,49 @@
+package com.image.steganography.controllers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.image.steganography.entities.Image;
+import com.image.steganography.services.ImageService;
+@RestController
+@RequestMapping("/imageSteganography")
+public class ImageController
+{
+@Autowired
+private ImageService imageService;
+// @PathVariable(value = "originalText")String originalText
+@PostMapping(value = "/image/add")
+public ResponseEntity<Image> addImage(@RequestBody Image image)
+{
+image=imageService.encryptData(image,image.getOriginalText());
+Image image1 = imageService.addImage(image);
+if (image1 == null)
+{
+return ResponseEntity.notFound().build();
+}
+return ResponseEntity.ok().body(image1);
+}
+@GetMapping(value = "/image/getByIdImage/{idImage}")
+public ResponseEntity<Image> getRecordByID(@PathVariable(value = "idImage") Integer idImage)
+{
+Image image = imageService.getImageByID(idImage);
+if (image != null) {
+image.setOriginalText(imageService.decryptData(image.getStegoImage(), image.getLength()));
+return ResponseEntity.ok().body(image);
+}
+return ResponseEntity.notFound().build();
+}
+@PutMapping(value = "/image/update")
+public ResponseEntity<Image> updateRecord(@RequestBody Image image) {
+Boolean flag = imageService.existsById(image.getIdRecord());
+if (flag == false) {
+return ResponseEntity.notFound().build();
+}
+return ResponseEntity.ok().body(imageService.addImage(image));
+}
+}

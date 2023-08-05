@@ -1,0 +1,204 @@
+package com.image.steganography.utils;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+public class ImageSteganography
+{
+private static ImageSteganography imageSteganography;
+public static String originalImagePath = "C:\\Users\\VIGNESH RAJ\\Downloads\\image_steganography\\steganography\\steganography\\src\\main\\java\\com\\image\\steganography\\utils\\gi.jpeg";
+public static String stegoImagePath = "C:\\Users\\VIGNESH RAJ\\Downloads\\image_steganography\\steganography\\steganography\\src\\main\\java\\com\\image\\steganography\\utils\\stego.jpg";
+private ImageSteganography()
+{
+}
+public static ImageSteganography getInstance() {
+if (imageSteganography == null)
+imageSteganography = new ImageSteganography();
+return imageSteganography;
+}
+public void encodeIntoImage(int[] messageBits, BufferedImage originalImage) throws IOException {
+File f = new File(stegoImagePath);
+int i = 0, j = 0;
+for (int x = 0; x < originalImage.getWidth(); x++) {
+for (int y = 0; y < originalImage.getHeight(); y++) {
+if (i < messageBits.length) {
+int currentPixel = originalImage.getRGB(x, y);
+int red = currentPixel >> 16;
+red = red & 255;
+int green = currentPixel >> 8;
+green = green & 255;
+int blue = currentPixel;
+blue = blue & 255;
+String bitString = "";
+if (i < messageBits.length) {
+bitString = Integer.toBinaryString(red);
+// System.out.println(bitString.length());
+while (bitString.length() != 8) {
+bitString = '0' + bitString;
+}
+int a = Integer.parseInt(String.valueOf(bitString.charAt(5)));
+int b = Integer.parseInt(String.valueOf(bitString.charAt(6)));
+StringBuilder stringBuilder = new StringBuilder(bitString);
+int difference = Math.abs(a - b);
+if (difference != messageBits[i]) {
+char q = stringBuilder.charAt(5);
+if (q == '0')
+stringBuilder.setCharAt(5, '1');
+else
+stringBuilder.setCharAt(5, '0');
+}
+red = Integer.parseInt(stringBuilder.toString());
+red = red & 255;
+}
+i++;
+if (i < messageBits.length) {
+bitString = Integer.toBinaryString(green);
+// System.out.println(bitString);
+while (bitString.length() != 8) {
+bitString = '0' + bitString;
+}
+int a = Integer.parseInt(String.valueOf(bitString.charAt(5)));
+int b = Integer.parseInt(String.valueOf(bitString.charAt(6)));
+StringBuilder stringBuilder = new StringBuilder(bitString);
+int difference = Math.abs(a - b);
+if (difference != messageBits[i]) {
+char q = stringBuilder.charAt(5);
+if (q == '0')
+stringBuilder.setCharAt(5, '1');
+else
+stringBuilder.setCharAt(5, '0');
+}
+green = Integer.parseInt(stringBuilder.toString());
+green = green & 255;
+}
+i++;
+if (i < messageBits.length) {
+bitString = Integer.toBinaryString(blue);
+// System.out.println(bitString);
+while (bitString.length() != 8) {
+bitString = '0' + bitString;
+}
+int a = Integer.parseInt(String.valueOf(bitString.charAt(5)));
+int b = Integer.parseInt(String.valueOf(bitString.charAt(6)));
+StringBuilder stringBuilder = new StringBuilder(bitString);
+int difference = Math.abs(a - b);
+if (difference != messageBits[i]) {
+char q = stringBuilder.charAt(5);
+if (q == '0')
+stringBuilder.setCharAt(5, '1');
+else
+stringBuilder.setCharAt(5, '0');
+}
+blue = Integer.parseInt(stringBuilder.toString());
+blue = blue & 255;
+}
+i++;
+Color color = new Color(red, green, blue);
+originalImage.setRGB(x, y, color.getRGB());
+ImageIO.write(originalImage, "png", f);
+}
+}
+}
+}
+public String decodeFromImage(BufferedImage stegoImage, int len) {
+int i = 0, j = 0;
+String b_msg = "";
+for (int x = 0; x < stegoImage.getWidth(); x++) {
+for (int y = 0; y < stegoImage.getHeight(); y++) {
+if (i < len) {
+int currentPixel = stegoImage.getRGB(x, y);
+int red = currentPixel >> 16;
+red = red & 255;
+int green = currentPixel >> 8;
+green = green & 255;
+int blue = currentPixel;
+blue = blue & 255;
+if (i < len) {
+String xString = Integer.toBinaryString(red);
+while (xString.length() != 8) {
+xString = '0' + xString;
+}
+int a = Integer.parseInt(String.valueOf(xString.charAt(5)));
+int b = Integer.parseInt(String.valueOf(xString.charAt(6)));
+int difference = Math.abs(a - b);
+if (difference == 0)
+b_msg += '0';
+else
+b_msg += '1';
+}
+i++;
+if (i < len) {
+String xString = Integer.toBinaryString(green);
+while (xString.length() != 8) {
+xString = '0' + xString;
+}
+int a = Integer.parseInt(String.valueOf(xString.charAt(5)));
+int b = Integer.parseInt(String.valueOf(xString.charAt(6)));
+int difference = Math.abs(a - b);
+if (difference == 0)
+b_msg += '0';
+else
+b_msg += '1';
+}
+i++;
+if (i < len) {
+String xString = Integer.toBinaryString(blue);
+while (xString.length() != 8) {
+xString = '0' + xString;
+}
+int a = Integer.parseInt(String.valueOf(xString.charAt(5)));
+int b = Integer.parseInt(String.valueOf(xString.charAt(6)));
+int difference = Math.abs(a - b);
+if (difference == 0)
+b_msg += '0';
+else
+b_msg += '1';
+}
+i++;
+} else
+break;
+}
+}
+return b_msg;
+}
+public int[] convertMessageToBits(String message) {
+int j = 0;
+int[] bitMessage = new int[message.length() * 8];
+for (int i = 0; i < message.length(); i++) {
+int x = message.charAt(i);
+String stringX = Integer.toBinaryString(x);
+// Length of stringX may not be 8 so make it of length 8
+while (stringX.length() != 8) {
+stringX = '0' + stringX;
+}
+for (int i1 = 0; i1 < 8; i1++) {
+bitMessage[j] = Integer.parseInt(String.valueOf(stringX.charAt(i1)));
+j++;
+}
+}
+return bitMessage;
+}
+public String convertBitsToMessage(String b_msg) {
+int index = 0;
+String decodedMessage = "";
+while (index < b_msg.length()) {
+String block = b_msg.substring(index, Math.min(index + 8, b_msg.length()));
+index += 8;
+int i = Integer.parseInt(block, 2);
+char c = (char) i;
+decodedMessage += c;
+}
+return decodedMessage;
+}
+public static BufferedImage getImage() {
+BufferedImage image = null;
+File file = new File(originalImagePath);
+try {
+image = ImageIO.read(file);
+} catch (IOException e) {
+System.out.println("get image..." + e.getMessage());
+}
+return image;
+}
+}
