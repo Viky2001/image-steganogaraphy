@@ -1,1 +1,1 @@
-# image-steganogaraphy
+# image-steganography
